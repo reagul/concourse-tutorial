@@ -1,0 +1,41 @@
+---
+resources:
+- name: resource-tutorial
+  type: git
+  source:
+    uri: https://github.com/reagul/GistSource.git
+    branch: master
+- name: Concourse1
+  type: git
+  source:
+    uri: git@github.com:reagul/Concourse1.git
+    private_key: {{github-private-key}}
+    branch: master
+- name: resource-deploy-web-app
+  type: cf
+  params:
+    manifest: manifest.yml
+    path: Concourse1
+  source:
+    api: {{cf-api}}
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-organization}}
+    space: {{cf-space}}
+    skip_cert_check: true
+jobs:
+- name: job-bump-date
+  serial: true
+
+  plan:
+  - get: resource-tutorial
+    trigger: true
+  - get: Concourse1
+    trigger: true
+  - task: bump-timestamp-file
+    file: resource-tutorial/Concourse1-bump-timestamp.yml
+  - put: Concourse1
+    params: {repository: updated-gist}
+  - put: resource-deploy-web-app
+    params:
+      manifest: manifest.yml

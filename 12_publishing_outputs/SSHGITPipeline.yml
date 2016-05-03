@@ -3,25 +3,22 @@ resources:
 - name: resource-tutorial
   type: git
   source:
-    uri: https://github.com/reagul/GistSource.git
-    branch: master
+    uri: https://github.com/starkandwayne/concourse-tutorial.git
 - name: resource-gist
   type: git
   source:
     uri: git@github.com:reagul/gist.git
-    private_key: {{github-private-key}}
+    private_key:
+              
     branch: master
 
 jobs:
 - name: job-bump-date
   serial: true
-
   plan:
   - get: resource-tutorial
-    trigger: true
   - get: resource-gist
-    trigger: true
   - task: bump-timestamp-file
-    file: resource-tutorial/bump-timestamp-file.yml
+    file: resource-tutorial/12_publishing_outputs/bump-timestamp-file.yml
   - put: resource-gist
     params: {repository: updated-gist}
